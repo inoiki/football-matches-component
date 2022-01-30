@@ -8,7 +8,8 @@ export default class FootballMatchesData extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedYear: null
+      selectedYear: null,
+      result: []
     };
   }
 
@@ -17,6 +18,18 @@ export default class FootballMatchesData extends Component {
     this.setState({
       selectedYear: year
     })
+
+    this.fetchFootballMatches(year)
+  }
+
+  fetchFootballMatches = (selectedYear) => {
+    if (selectedYear) {
+      fetch(`https://jsonmock.hackerrank.com/api/football_competitions?year=${selectedYear}`)
+        .then((response) => response.json())
+        .then(result => this.setState({
+          result: result.data
+        }))
+    }
   }
 
   render() {
@@ -43,14 +56,24 @@ export default class FootballMatchesData extends Component {
 
         <section className="content">
           <section>
-            <div className="total-matches" data-testid="total-matches"></div>
+            {this.state.selectedYear && this.state.result.length > 0 && 
+              <div className="total-matches" data-testid="total-matches">Total matches: {this.state.result.length}</div>
+            }
             
-            <ul className="mr-20 matches styled" data-testid="match-list">
-              <li className="slide-up-fade-in"> </li>
-            </ul>
+            {this.state.result.length > 0 && 
+              <ul className="mr-20 matches styled" data-testid="match-list">
+                {this.state.result.map((resp, index) => {
+                  return (
+                    <li className="slide-up-fade-in" key={index + 1}>Match {resp.name} won by {resp.winner}</li>
+                  );
+                })}
+              </ul>
+            }
           </section>
 
-          <div data-testid="no-result" className="slide-up-fade-in no-result"></div>
+          {this.state.selectedYear && this.state.result.length === 0 &&
+            <div data-testid="no-result" className="slide-up-fade-in no-result">No Matches found</div>
+          }
         </section>
       </div>
     );
